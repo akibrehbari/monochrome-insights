@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ProxiesRouteImport } from './routes/proxies'
 import { Route as InfluencersRouteImport } from './routes/influencers'
+import { Route as EmployeesRouteImport } from './routes/employees'
 import { Route as IndexRouteImport } from './routes/index'
 
 const ProxiesRoute = ProxiesRouteImport.update({
@@ -23,6 +24,11 @@ const InfluencersRoute = InfluencersRouteImport.update({
   path: '/influencers',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EmployeesRoute = EmployeesRouteImport.update({
+  id: '/employees',
+  path: '/employees',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -31,30 +37,34 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/employees': typeof EmployeesRoute
   '/influencers': typeof InfluencersRoute
   '/proxies': typeof ProxiesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/employees': typeof EmployeesRoute
   '/influencers': typeof InfluencersRoute
   '/proxies': typeof ProxiesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/employees': typeof EmployeesRoute
   '/influencers': typeof InfluencersRoute
   '/proxies': typeof ProxiesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/influencers' | '/proxies'
+  fullPaths: '/' | '/employees' | '/influencers' | '/proxies'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/influencers' | '/proxies'
-  id: '__root__' | '/' | '/influencers' | '/proxies'
+  to: '/' | '/employees' | '/influencers' | '/proxies'
+  id: '__root__' | '/' | '/employees' | '/influencers' | '/proxies'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  EmployeesRoute: typeof EmployeesRoute
   InfluencersRoute: typeof InfluencersRoute
   ProxiesRoute: typeof ProxiesRoute
 }
@@ -75,6 +85,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InfluencersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/employees': {
+      id: '/employees'
+      path: '/employees'
+      fullPath: '/employees'
+      preLoaderRoute: typeof EmployeesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -87,6 +104,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  EmployeesRoute: EmployeesRoute,
   InfluencersRoute: InfluencersRoute,
   ProxiesRoute: ProxiesRoute,
 }
