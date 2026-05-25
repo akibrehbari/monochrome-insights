@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ProxiesRouteImport } from './routes/proxies'
+import { Route as OperationsRouteImport } from './routes/operations'
 import { Route as InfluencersRouteImport } from './routes/influencers'
 import { Route as EmployeesRouteImport } from './routes/employees'
 import { Route as IndexRouteImport } from './routes/index'
@@ -17,6 +18,11 @@ import { Route as IndexRouteImport } from './routes/index'
 const ProxiesRoute = ProxiesRouteImport.update({
   id: '/proxies',
   path: '/proxies',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OperationsRoute = OperationsRouteImport.update({
+  id: '/operations',
+  path: '/operations',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InfluencersRoute = InfluencersRouteImport.update({
@@ -39,12 +45,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/employees': typeof EmployeesRoute
   '/influencers': typeof InfluencersRoute
+  '/operations': typeof OperationsRoute
   '/proxies': typeof ProxiesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/employees': typeof EmployeesRoute
   '/influencers': typeof InfluencersRoute
+  '/operations': typeof OperationsRoute
   '/proxies': typeof ProxiesRoute
 }
 export interface FileRoutesById {
@@ -52,20 +60,28 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/employees': typeof EmployeesRoute
   '/influencers': typeof InfluencersRoute
+  '/operations': typeof OperationsRoute
   '/proxies': typeof ProxiesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/employees' | '/influencers' | '/proxies'
+  fullPaths: '/' | '/employees' | '/influencers' | '/operations' | '/proxies'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/employees' | '/influencers' | '/proxies'
-  id: '__root__' | '/' | '/employees' | '/influencers' | '/proxies'
+  to: '/' | '/employees' | '/influencers' | '/operations' | '/proxies'
+  id:
+    | '__root__'
+    | '/'
+    | '/employees'
+    | '/influencers'
+    | '/operations'
+    | '/proxies'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   EmployeesRoute: typeof EmployeesRoute
   InfluencersRoute: typeof InfluencersRoute
+  OperationsRoute: typeof OperationsRoute
   ProxiesRoute: typeof ProxiesRoute
 }
 
@@ -76,6 +92,13 @@ declare module '@tanstack/react-router' {
       path: '/proxies'
       fullPath: '/proxies'
       preLoaderRoute: typeof ProxiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/operations': {
+      id: '/operations'
+      path: '/operations'
+      fullPath: '/operations'
+      preLoaderRoute: typeof OperationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/influencers': {
@@ -106,6 +129,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   EmployeesRoute: EmployeesRoute,
   InfluencersRoute: InfluencersRoute,
+  OperationsRoute: OperationsRoute,
   ProxiesRoute: ProxiesRoute,
 }
 export const routeTree = rootRouteImport
