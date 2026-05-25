@@ -9,6 +9,8 @@ import {
 } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
+import { AppSidebar } from "@/components/AppSidebar";
+import { StoreProvider } from "@/lib/store";
 
 function NotFoundComponent() {
   return (
@@ -72,11 +74,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
+      { title: "Ledger / OS — Agency Financial Dashboard" },
+      { name: "description", content: "Monochrome financial dashboard for influencer agencies — track revenue, costs, proxies, employees, ops, and forecast." },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:title", content: "Ledger / OS — Agency Financial Dashboard" },
+      { property: "og:description", content: "Monochrome financial dashboard for influencer agencies." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
@@ -113,7 +115,14 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
+      <StoreProvider>
+        <div className="flex min-h-screen w-full bg-background text-foreground">
+          <AppSidebar />
+          <main className="flex-1 min-w-0 overflow-x-auto">
+            <Outlet />
+          </main>
+        </div>
+      </StoreProvider>
     </QueryClientProvider>
   );
 }
