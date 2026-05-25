@@ -9,9 +9,15 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ProxiesRouteImport } from './routes/proxies'
 import { Route as InfluencersRouteImport } from './routes/influencers'
 import { Route as IndexRouteImport } from './routes/index'
 
+const ProxiesRoute = ProxiesRouteImport.update({
+  id: '/proxies',
+  path: '/proxies',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InfluencersRoute = InfluencersRouteImport.update({
   id: '/influencers',
   path: '/influencers',
@@ -26,31 +32,42 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/influencers': typeof InfluencersRoute
+  '/proxies': typeof ProxiesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/influencers': typeof InfluencersRoute
+  '/proxies': typeof ProxiesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/influencers': typeof InfluencersRoute
+  '/proxies': typeof ProxiesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/influencers'
+  fullPaths: '/' | '/influencers' | '/proxies'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/influencers'
-  id: '__root__' | '/' | '/influencers'
+  to: '/' | '/influencers' | '/proxies'
+  id: '__root__' | '/' | '/influencers' | '/proxies'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   InfluencersRoute: typeof InfluencersRoute
+  ProxiesRoute: typeof ProxiesRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/proxies': {
+      id: '/proxies'
+      path: '/proxies'
+      fullPath: '/proxies'
+      preLoaderRoute: typeof ProxiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/influencers': {
       id: '/influencers'
       path: '/influencers'
@@ -71,6 +88,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   InfluencersRoute: InfluencersRoute,
+  ProxiesRoute: ProxiesRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
