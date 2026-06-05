@@ -53,9 +53,9 @@ function Page() {
                         {TEAMS.map(t => <option key={t}>{t}</option>)}
                       </select>
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums"><EditableCell type="number" prefix="$" value={r.monthlySalary} onChange={v => update(r.id, { monthlySalary: Number(v) || 0 })} /></td>
+                    <td className="px-3 py-2 text-right tabular-nums"><EditableCell type="number" prefix="Rs " value={r.monthlySalary} onChange={v => update(r.id, { monthlySalary: Number(v) || 0 })} /></td>
                     <td className="px-3 py-2 text-right tabular-nums">{fmt(r.monthlySalary * 12)}</td>
-                    <td className="px-3 py-2 text-right tabular-nums"><EditableCell type="number" prefix="$" value={r.monthlyBonus} onChange={v => update(r.id, { monthlyBonus: Number(v) || 0 })} /></td>
+                    <td className="px-3 py-2 text-right tabular-nums"><EditableCell type="number" prefix="Rs " value={r.monthlyBonus} onChange={v => update(r.id, { monthlyBonus: Number(v) || 0 })} /></td>
                     <td className="px-3 py-2 text-right tabular-nums">{fmt(r.monthlyBonus * 12)}</td>
                     <td className="px-3 py-2 text-right tabular-nums font-semibold">{fmt(totalM)}</td>
                     <td className="px-3 py-2 text-right tabular-nums font-semibold">{fmt(totalM * 12)}</td>

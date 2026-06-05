@@ -83,7 +83,7 @@ function Page() {
                 <td className="px-3 py-1.5 sticky left-0 bg-card pl-8">Other Revenue</td>
                 {MONTHS.map(m => (
                   <td key={m} className="px-1 py-1.5 text-right tabular-nums">
-                    <EditableCell type="number" prefix="$" value={extras.otherRevenue[m]} onChange={v => editExtra("otherRevenue", m, Number(v) || 0)} />
+                    <EditableCell type="number" prefix="Rs " value={extras.otherRevenue[m]} onChange={v => editExtra("otherRevenue", m, Number(v) || 0)} />
                   </td>
                 ))}
                 <td className="px-3 py-1.5 text-right tabular-nums">{fmt(sumMonthly(extras.otherRevenue))}</td>
@@ -102,7 +102,7 @@ function Page() {
                 <td className="px-3 py-1.5 sticky left-0 bg-card pl-8">Miscellaneous</td>
                 {MONTHS.map(m => (
                   <td key={m} className="px-1 py-1.5 text-right tabular-nums">
-                    <EditableCell type="number" prefix="$" value={extras.miscellaneous[m]} onChange={v => editExtra("miscellaneous", m, Number(v) || 0)} />
+                    <EditableCell type="number" prefix="Rs " value={extras.miscellaneous[m]} onChange={v => editExtra("miscellaneous", m, Number(v) || 0)} />
                   </td>
                 ))}
                 <td className="px-3 py-1.5 text-right tabular-nums">{fmt(sumMonthly(extras.miscellaneous))}</td>

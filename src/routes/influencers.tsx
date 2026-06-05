@@ -70,8 +70,8 @@ function Page() {
                     <td className="px-3 py-2"><EditableCell value={r.proxyId} onChange={v => update(r.id, { proxyId: v })} /></td>
                     <td className="px-3 py-2"><EditableCell value={r.niche} onChange={v => update(r.id, { niche: v })} /></td>
                     <td className="px-3 py-2 max-w-[160px] truncate"><EditableCell value={r.driveLink} onChange={v => update(r.id, { driveLink: v })} /></td>
-                    <td className="px-3 py-2 text-right tabular-nums"><EditableCell type="number" prefix="$" value={r.monthlyRevenue} onChange={v => update(r.id, { monthlyRevenue: Number(v) || 0 })} /></td>
-                    <td className="px-3 py-2 text-right tabular-nums"><EditableCell type="number" prefix="$" value={r.monthlyCost} onChange={v => update(r.id, { monthlyCost: Number(v) || 0 })} /></td>
+                    <td className="px-3 py-2 text-right tabular-nums"><EditableCell type="number" prefix="Rs " value={r.monthlyRevenue} onChange={v => update(r.id, { monthlyRevenue: Number(v) || 0 })} /></td>
+                    <td className="px-3 py-2 text-right tabular-nums"><EditableCell type="number" prefix="Rs " value={r.monthlyCost} onChange={v => update(r.id, { monthlyCost: Number(v) || 0 })} /></td>
                     <td className="px-3 py-2 text-right tabular-nums font-semibold">{fmt(net)}</td>
                     <td className="px-3 py-2 max-w-[160px]"><EditableCell value={r.notes} onChange={v => update(r.id, { notes: v })} /></td>
                     <td className="px-3 py-2">

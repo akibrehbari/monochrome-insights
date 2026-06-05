@@ -67,7 +67,7 @@ function Page() {
                       ? <a href={r.changeUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 underline underline-offset-2"><ExternalLink className="h-3 w-3" />Open</a>
                       : <span className="text-muted-foreground">—</span>}
                   </td>
-                  <td className="px-3 py-2 text-right tabular-nums"><EditableCell type="number" prefix="$" value={r.monthlyCost} onChange={v => update(r.id, { monthlyCost: Number(v) || 0 })} /></td>
+                  <td className="px-3 py-2 text-right tabular-nums"><EditableCell type="number" prefix="Rs " value={r.monthlyCost} onChange={v => update(r.id, { monthlyCost: Number(v) || 0 })} /></td>
                   <td className="px-3 py-2"><EditableCell value={r.renewalDate} onChange={v => update(r.id, { renewalDate: v })} /></td>
                   <td className="px-3 py-2">
                     <select value={r.status} onChange={e => update(r.id, { status: e.target.value as Proxy["status"] })}

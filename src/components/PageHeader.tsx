@@ -21,5 +21,5 @@ export function KpiCard({ label, value, hint }: { label: string; value: string; 
   );
 }
 
-export const fmt = (n: number) => n < 0 ? `-$${Math.abs(Math.round(n)).toLocaleString()}` : `$${Math.round(n).toLocaleString()}`;
+export const fmt = (n: number) => n < 0 ? `-Rs ${Math.abs(Math.round(n)).toLocaleString("en-PK")}` : `Rs ${Math.round(n).toLocaleString("en-PK")}`;
 export const pct = (n: number) => `${(n * 100).toFixed(1)}%`;

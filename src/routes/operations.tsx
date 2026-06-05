@@ -97,7 +97,7 @@ function Section({ channel, rows, onCell, onItem, onAdd, onRemove }: {
                 <td className="px-3 py-1.5 font-medium sticky left-0 bg-card"><EditableCell value={r.item} onChange={v => onItem(channel, r.id, v)} /></td>
                 {MONTHS.map(m => (
                   <td key={m} className="px-1 py-1.5 text-right tabular-nums">
-                    <EditableCell type="number" prefix="$" value={r.values[m]} onChange={v => onCell(channel, r.id, m, Number(v) || 0)} />
+                    <EditableCell type="number" prefix="Rs " value={r.values[m]} onChange={v => onCell(channel, r.id, m, Number(v) || 0)} />
                   </td>
                 ))}
                 <td className="px-3 py-1.5 text-right tabular-nums font-semibold">{fmt(sumMonthly(r.values))}</td>
