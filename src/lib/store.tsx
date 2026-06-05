@@ -53,7 +53,7 @@ export type Proxy = {
 };
 
 // ---------- Employee ----------
-export type Team = "Reddit" | "X" | "Meta" | "Video Editing" | "Management";
+export type Team = "Reddit" | "X" | "Meta" | "Video Editing" | "Management" | "IT";
 export type SystemRole = "admin" | "hr" | "employee" | "";
 
 export type Employee = {

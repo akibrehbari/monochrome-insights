@@ -9,7 +9,7 @@ import { EditableCell } from "@/components/EditableCell";
 
 export const Route = createFileRoute("/employees")({ component: () => <RoleGuard allowed={["admin","hr"]}><Page /></RoleGuard> });
 
-const TEAMS: Team[] = ["Reddit", "X", "Meta", "Video Editing", "Management"];
+const TEAMS: Team[] = ["Reddit", "X", "Meta", "Video Editing", "Management", "IT"];
 const SYSTEM_ROLES: { value: SystemRole; label: string }[] = [
   { value: "",         label: "— Unassigned" },
   { value: "admin",    label: "Admin" },
