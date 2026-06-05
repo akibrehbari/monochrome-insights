@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, useEffect, type ReactNode, type Dispatch, type SetStateAction } from "react";
-import { dbGet, dbSet } from "./supabase";
+import { createContext, useContext, useState, useEffect, useRef, type ReactNode, type Dispatch, type SetStateAction } from "react";
+import { readBin, writeBin } from "./jsonbin";
 
 // Bump this version string whenever you want to wipe all cached data and reseed
 const STORE_VERSION = "v4";
@@ -14,13 +14,9 @@ if (typeof window !== "undefined") {
   }
 }
 
-/**
- * Persists state to BOTH localStorage (instant reads) and Supabase (cross-device sync).
- * On mount: tries Supabase first, falls back to localStorage, falls back to seed.
- */
+// Simple localStorage-only persistence (JSONBin sync handled at StoreProvider level)
 function useLocalState<T>(key: string, seed: T): [T, Dispatch<SetStateAction<T>>] {
   const [state, setState] = useState<T>(() => {
-    // Synchronous init from localStorage
     try {
       const stored = localStorage.getItem(key);
       if (stored) return JSON.parse(stored) as T;
@@ -28,21 +24,8 @@ function useLocalState<T>(key: string, seed: T): [T, Dispatch<SetStateAction<T>>
     return seed;
   });
 
-  // On mount: pull latest from Supabase (async, may update state once)
-  useEffect(() => {
-    dbGet<T>(key).then(remote => {
-      if (remote !== null) {
-        setState(remote);
-        try { localStorage.setItem(key, JSON.stringify(remote)); } catch { /* ignore */ }
-      }
-    });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key]);
-
-  // On every change: write to localStorage + Supabase
   useEffect(() => {
     try { localStorage.setItem(key, JSON.stringify(state)); } catch { /* ignore */ }
-    dbSet(key, state);
   }, [key, state]);
 
   return [state, setState];
@@ -361,6 +344,33 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   });
   const [sops, setSOPs] = useLocalState<SOP[]>("el_sops", seedSOPs);
   const [attendance, setAttendance] = useLocalState<AttendanceMap>("el_attendance", seedAttendance);
+
+  // ── JSONBin sync ──────────────────────────────────────────────────────────
+  // On mount: pull latest data from JSONBin and hydrate all state
+  useEffect(() => {
+    readBin().then(remote => {
+      if (!remote) return;
+      if (remote.el_influencers) setInfluencers(remote.el_influencers as Influencer[]);
+      if (remote.el_proxies)     setProxies(remote.el_proxies as Proxy[]);
+      if (remote.el_employees)   setEmployees(remote.el_employees as Employee[]);
+      if (remote.el_ops)         setOps(remote.el_ops as OpsData);
+      if (remote.el_extras)      setExtras(remote.el_extras as ForecastExtras);
+      if (remote.el_sops)        setSOPs(remote.el_sops as SOP[]);
+      if (remote.el_attendance)  setAttendance(remote.el_attendance as AttendanceMap);
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Debounced write: 2 s after last change, push everything to JSONBin
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      writeBin({ el_influencers: influencers, el_proxies: proxies, el_employees: employees,
+                 el_ops: ops, el_extras: extras, el_sops: sops, el_attendance: attendance });
+    }, 2000);
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [influencers, proxies, employees, ops, extras, sops, attendance]);
 
   return (
     <Ctx.Provider value={{
