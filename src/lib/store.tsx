@@ -1,5 +1,18 @@
 import { createContext, useContext, useState, useEffect, type ReactNode, type Dispatch, type SetStateAction } from "react";
 
+// Bump this version string whenever you want to wipe all cached data and reseed
+const STORE_VERSION = "v3";
+const VERSION_KEY   = "el_store_version";
+
+// On first load, if version doesn't match wipe all store keys
+const STORE_KEYS = ["el_influencers","el_proxies","el_employees","el_ops","el_extras","el_sops","el_attendance"];
+if (typeof window !== "undefined") {
+  if (localStorage.getItem(VERSION_KEY) !== STORE_VERSION) {
+    STORE_KEYS.forEach(k => localStorage.removeItem(k));
+    localStorage.setItem(VERSION_KEY, STORE_VERSION);
+  }
+}
+
 // Persists state to localStorage — reads seed only on first ever load
 function useLocalState<T>(key: string, seed: T): [T, Dispatch<SetStateAction<T>>] {
   const [state, setState] = useState<T>(() => {
