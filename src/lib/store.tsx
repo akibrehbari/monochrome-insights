@@ -1,7 +1,8 @@
 import { createContext, useContext, useState, useEffect, type ReactNode, type Dispatch, type SetStateAction } from "react";
+import { dbGet, dbSet } from "./supabase";
 
 // Bump this version string whenever you want to wipe all cached data and reseed
-const STORE_VERSION = "v3";
+const STORE_VERSION = "v4";
 const VERSION_KEY   = "el_store_version";
 
 // On first load, if version doesn't match wipe all store keys
@@ -13,9 +14,13 @@ if (typeof window !== "undefined") {
   }
 }
 
-// Persists state to localStorage — reads seed only on first ever load
+/**
+ * Persists state to BOTH localStorage (instant reads) and Supabase (cross-device sync).
+ * On mount: tries Supabase first, falls back to localStorage, falls back to seed.
+ */
 function useLocalState<T>(key: string, seed: T): [T, Dispatch<SetStateAction<T>>] {
   const [state, setState] = useState<T>(() => {
+    // Synchronous init from localStorage
     try {
       const stored = localStorage.getItem(key);
       if (stored) return JSON.parse(stored) as T;
@@ -23,10 +28,21 @@ function useLocalState<T>(key: string, seed: T): [T, Dispatch<SetStateAction<T>>
     return seed;
   });
 
+  // On mount: pull latest from Supabase (async, may update state once)
   useEffect(() => {
-    try {
-      localStorage.setItem(key, JSON.stringify(state));
-    } catch { /* ignore */ }
+    dbGet<T>(key).then(remote => {
+      if (remote !== null) {
+        setState(remote);
+        try { localStorage.setItem(key, JSON.stringify(remote)); } catch { /* ignore */ }
+      }
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
+
+  // On every change: write to localStorage + Supabase
+  useEffect(() => {
+    try { localStorage.setItem(key, JSON.stringify(state)); } catch { /* ignore */ }
+    dbSet(key, state);
   }, [key, state]);
 
   return [state, setState];
