@@ -41,14 +41,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   const login = (email: string, password: string): boolean => {
-    const found = MOCK_USERS.find(
+    // 1. Check hardcoded admin/HR/seed accounts first
+    const hardcoded = MOCK_USERS.find(
       (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
     );
-    if (!found) return false;
-    const { password: _pw, ...u } = found;
-    setUser(u);
-    localStorage.setItem("eleopards_auth", JSON.stringify(u));
-    return true;
+    if (hardcoded) {
+      const { password: _pw, ...u } = hardcoded;
+      setUser(u);
+      localStorage.setItem("eleopards_auth", JSON.stringify(u));
+      return true;
+    }
+
+    // 2. Check employees added via the HR/Admin dashboard (stored in localStorage)
+    try {
+      const stored = localStorage.getItem("el_employees");
+      if (stored) {
+        const employees: Array<{
+          id: string; name: string; username?: string;
+          password?: string; systemRole?: string;
+        }> = JSON.parse(stored);
+
+        const emp = employees.find(
+          (e) =>
+            e.username &&
+            e.password &&
+            e.username.toLowerCase() === email.toLowerCase() &&
+            e.password === password &&
+            e.systemRole && e.systemRole !== ""
+        );
+
+        if (emp && emp.systemRole) {
+          const role = emp.systemRole as Role;
+          const authUser: AuthUser = {
+            id: emp.id,
+            name: emp.name,
+            email: emp.username!,
+            role,
+            employeeId: role === "employee" ? emp.id : undefined,
+          };
+          setUser(authUser);
+          localStorage.setItem("eleopards_auth", JSON.stringify(authUser));
+          return true;
+        }
+      }
+    } catch { /* ignore parse errors */ }
+
+    return false;
   };
 
   const logout = () => {
