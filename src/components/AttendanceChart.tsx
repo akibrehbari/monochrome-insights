@@ -1,158 +1,209 @@
+import { useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { type AttendanceRecord, type AttendanceStatus } from "@/lib/store";
 
 interface Props {
   records: AttendanceRecord;
 }
 
-const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-const STATUS_CLASS: Record<AttendanceStatus | "weekend" | "future" | "none", string> = {
-  present:  "bg-foreground",
-  "half-day": "bg-foreground/50",
-  leave:    "bg-foreground/25",
-  absent:   "bg-muted-foreground/20",
-  weekend:  "bg-transparent",
-  future:   "bg-transparent",
-  none:     "bg-muted/50",
+const STATUS_BG: Record<AttendanceStatus | "none" | "future" | "weekend", string> = {
+  present:    "bg-foreground text-background",
+  "half-day": "bg-foreground/50 text-foreground",
+  leave:      "bg-foreground/20 text-foreground",
+  absent:     "bg-destructive/15 text-destructive",
+  none:       "bg-muted/60 text-muted-foreground",
+  future:     "bg-transparent text-muted-foreground/30",
+  weekend:    "bg-transparent text-muted-foreground/25",
 };
 
 const STATUS_LABEL: Record<AttendanceStatus, string> = {
-  present: "Present",
+  present:    "Present",
   "half-day": "Half Day",
-  leave: "Leave",
-  absent: "Absent",
+  leave:      "Leave",
+  absent:     "Absent",
+};
+
+const STATUS_DOT: Record<AttendanceStatus, string> = {
+  present:    "bg-foreground",
+  "half-day": "bg-foreground/50",
+  leave:      "bg-foreground/20",
+  absent:     "bg-destructive/40",
 };
 
 export function AttendanceChart({ records }: Props) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // Build 52 weeks of cells ending today
-  // Start from Monday 52 weeks ago
-  const start = new Date(today);
-  start.setDate(start.getDate() - (52 * 7) + 1);
-  // Align to Monday
-  const dow = start.getDay(); // 0=Sun
-  const daysToMon = dow === 0 ? 1 : (dow === 1 ? 0 : -(dow - 1));
-  start.setDate(start.getDate() + daysToMon);
+  const [viewYear, setViewYear] = useState(today.getFullYear());
+  const [viewMonth, setViewMonth] = useState(today.getMonth()); // 0-indexed
 
-  // Build weeks: array of 52 weeks, each with 7 days (Mon-Sun)
-  type Cell = { date: Date; iso: string; status: AttendanceStatus | "weekend" | "future" | "none" };
-  const weeks: Cell[][] = [];
-
-  let cursor = new Date(start);
-  for (let w = 0; w < 53; w++) {
-    const week: Cell[] = [];
-    for (let d = 0; d < 7; d++) {
-      const date = new Date(cursor);
-      const iso = date.toISOString().slice(0, 10);
-      const dayOfWeek = date.getDay(); // 0=Sun, 6=Sat
-      let status: Cell["status"] = "none";
-      if (date > today) {
-        status = "future";
-      } else if (dayOfWeek === 0 || dayOfWeek === 6) {
-        status = "weekend";
-      } else if (records[iso]) {
-        status = records[iso];
-      } else {
-        status = "none";
-      }
-      week.push({ date, iso, status });
-      cursor.setDate(cursor.getDate() + 1);
-    }
-    weeks.push(week);
+  function prevMonth() {
+    if (viewMonth === 0) { setViewMonth(11); setViewYear(y => y - 1); }
+    else setViewMonth(m => m - 1);
+  }
+  function nextMonth() {
+    const futureLimit = new Date(today.getFullYear(), today.getMonth(), 1);
+    const current = new Date(viewYear, viewMonth, 1);
+    if (current >= futureLimit) return; // don't go past current month
+    if (viewMonth === 11) { setViewMonth(0); setViewYear(y => y + 1); }
+    else setViewMonth(m => m + 1);
   }
 
-  // Month labels — find which column each month starts in
-  const monthLabels: { label: string; col: number }[] = [];
-  weeks.forEach((week, wi) => {
-    const firstWorkday = week.find((c) => c.status !== "weekend" && c.status !== "future");
-    if (firstWorkday) {
-      const d = firstWorkday.date;
-      if (d.getDate() <= 7) {
-        const label = d.toLocaleString("default", { month: "short" });
-        if (!monthLabels.length || monthLabels[monthLabels.length - 1].label !== label) {
-          monthLabels.push({ label, col: wi });
-        }
-      }
-    }
-  });
+  const isCurrentMonth = viewYear === today.getFullYear() && viewMonth === today.getMonth();
+  const monthName = new Date(viewYear, viewMonth, 1).toLocaleString("default", { month: "long", year: "numeric" });
 
-  // Stats
-  const counts = { present: 0, "half-day": 0, leave: 0, absent: 0 };
-  Object.values(records).forEach((s) => { counts[s] = (counts[s] || 0) + 1; });
-  const total = counts.present + counts["half-day"] + counts.leave + counts.absent;
-  const pct = total ? Math.round((counts.present / total) * 100) : 0;
+  // Build calendar grid (Mon = 0 ... Sun = 6)
+  const firstDay = new Date(viewYear, viewMonth, 1);
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+  // getDay(): 0=Sun,1=Mon,...,6=Sat → convert to Mon-based offset
+  const startOffset = (firstDay.getDay() + 6) % 7; // Mon=0, Sun=6
+
+  type Cell = { day: number; date: Date; iso: string; status: AttendanceStatus | "none" | "future" | "weekend" } | null;
+  const cells: Cell[] = [];
+
+  // Leading empty cells
+  for (let i = 0; i < startOffset; i++) cells.push(null);
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const date = new Date(viewYear, viewMonth, d);
+    const iso = date.toISOString().slice(0, 10);
+    const dow = date.getDay(); // 0=Sun, 6=Sat
+    const isWeekend = dow === 0 || dow === 6;
+    let status: Cell["status"];
+
+    if (date > today) {
+      status = "future";
+    } else if (isWeekend) {
+      status = "weekend";
+    } else if (records[iso]) {
+      status = records[iso];
+    } else {
+      status = "none";
+    }
+    cells.push({ day: d, date, iso, status });
+  }
+
+  // Pad to complete last row
+  while (cells.length % 7 !== 0) cells.push(null);
+
+  // Monthly stats (weekdays only, not future)
+  const monthISOs = Array.from({ length: daysInMonth }, (_, i) => {
+    const d = new Date(viewYear, viewMonth, i + 1);
+    return { iso: d.toISOString().slice(0, 10), dow: d.getDay(), date: d };
+  }).filter(({ dow, date }) => dow !== 0 && dow !== 6 && date <= today);
+
+  const counts: Record<AttendanceStatus, number> = { present: 0, "half-day": 0, leave: 0, absent: 0 };
+  monthISOs.forEach(({ iso }) => {
+    const s = records[iso] as AttendanceStatus | undefined;
+    if (s) counts[s]++;
+    else counts.absent++; // unmarked weekday in the past = absent
+  });
+  const totalDays = monthISOs.length;
+  const pct = totalDays ? Math.round(((counts.present + counts["half-day"] * 0.5) / totalDays) * 100) : 0;
 
   return (
-    <div>
-      {/* Stats row */}
-      <div className="flex gap-6 mb-4 text-sm">
-        <div>
-          <span className="text-2xl font-semibold tabular-nums">{pct}%</span>
-          <span className="text-muted-foreground text-xs ml-1.5 uppercase tracking-widest">attendance rate</span>
+    <div className="w-full">
+      {/* Header: nav + stats */}
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={prevMonth}
+            className="p-1.5 rounded hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <span className="text-sm font-semibold w-40 text-center">{monthName}</span>
+          <button
+            onClick={nextMonth}
+            disabled={isCurrentMonth}
+            className="p-1.5 rounded hover:bg-muted transition-colors text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
         </div>
-        <div className="flex gap-4 items-end pb-0.5">
+
+        {/* Stats row */}
+        <div className="flex items-center gap-4 text-xs">
+          <div className="flex items-center gap-1.5">
+            <span className="text-xl font-semibold tabular-nums">{pct}%</span>
+            <span className="text-muted-foreground uppercase tracking-widest text-[10px]">rate</span>
+          </div>
           {(Object.entries(counts) as [AttendanceStatus, number][]).map(([s, n]) => (
-            <div key={s} className="text-xs text-muted-foreground">
-              <span className="font-medium text-foreground">{n}</span> {STATUS_LABEL[s]}
+            <div key={s} className="flex items-center gap-1 text-muted-foreground">
+              <div className={`w-2 h-2 rounded-full ${STATUS_DOT[s]}`} />
+              <span className="font-medium text-foreground">{n}</span>
+              <span>{STATUS_LABEL[s]}</span>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Chart */}
-      <div className="overflow-x-auto">
-        <div className="inline-block">
-          {/* Month labels */}
-          <div className="flex mb-1 ml-8">
-            {weeks.map((_, wi) => {
-              const ml = monthLabels.find((m) => m.col === wi);
-              return (
-                <div key={wi} style={{ width: 12, marginRight: 2 }} className="text-[9px] text-muted-foreground">
-                  {ml ? ml.label : ""}
-                </div>
-              );
-            })}
+      {/* Day-of-week headers */}
+      <div className="grid grid-cols-7 mb-1">
+        {DAY_LABELS.map((d) => (
+          <div key={d} className="text-[10px] uppercase tracking-widest text-muted-foreground text-center py-1">
+            {d}
           </div>
+        ))}
+      </div>
 
-          <div className="flex gap-0">
-            {/* Day labels */}
-            <div className="flex flex-col gap-[2px] mr-2 justify-start">
-              {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => (
-                <div key={i} style={{ width: 10, height: 10 }} className="text-[9px] text-muted-foreground flex items-center">
-                  {i < 5 ? d : ""}
-                </div>
-              ))}
+      {/* Calendar grid */}
+      <div className="grid grid-cols-7 gap-1">
+        {cells.map((cell, i) => {
+          if (!cell) {
+            return <div key={`empty-${i}`} />;
+          }
+
+          const isToday = cell.iso === today.toISOString().slice(0, 10);
+          const isWeekend = cell.status === "weekend";
+          const isFuture = cell.status === "future";
+          const hasStatus = !isWeekend && !isFuture && cell.status !== "none";
+          const label = hasStatus ? STATUS_LABEL[cell.status as AttendanceStatus] : undefined;
+
+          return (
+            <div
+              key={cell.iso}
+              title={label ? `${cell.iso} — ${label}` : cell.iso}
+              className={`
+                relative flex flex-col items-center justify-center rounded-md aspect-square text-sm font-medium
+                transition-opacity select-none
+                ${isWeekend || isFuture ? "opacity-30" : ""}
+                ${!isWeekend && !isFuture ? STATUS_BG[cell.status] : "text-muted-foreground"}
+                ${isToday ? "ring-2 ring-foreground ring-offset-1" : ""}
+              `}
+            >
+              <span className={`text-xs font-semibold ${isWeekend || isFuture ? "text-muted-foreground" : ""}`}>
+                {cell.day}
+              </span>
+              {hasStatus && (
+                <span className="text-[8px] leading-none mt-0.5 opacity-80 hidden sm:block">
+                  {cell.status === "half-day" ? "½" : cell.status === "present" ? "✓" : cell.status === "leave" ? "L" : "A"}
+                </span>
+              )}
             </div>
+          );
+        })}
+      </div>
 
-            {/* Grid */}
-            {weeks.map((week, wi) => (
-              <div key={wi} className="flex flex-col gap-[2px] mr-[2px]">
-                {week.map((cell, di) => (
-                  <div
-                    key={di}
-                    title={cell.status !== "weekend" && cell.status !== "future" && cell.status !== "none"
-                      ? `${cell.iso} — ${STATUS_LABEL[cell.status as AttendanceStatus]}`
-                      : cell.iso}
-                    className={`w-[10px] h-[10px] rounded-[2px] transition-opacity ${STATUS_CLASS[cell.status]}`}
-                  />
-                ))}
-              </div>
-            ))}
+      {/* Legend */}
+      <div className="flex items-center gap-4 mt-4 pt-3 border-t border-border flex-wrap">
+        {(Object.entries(STATUS_LABEL) as [AttendanceStatus, string][]).map(([s, label]) => (
+          <div key={s} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <div className={`w-4 h-4 rounded flex items-center justify-center text-[9px] font-bold
+              ${s === "present" ? "bg-foreground text-background" :
+                s === "half-day" ? "bg-foreground/50 text-foreground" :
+                s === "leave" ? "bg-foreground/20 text-foreground" :
+                "bg-destructive/15 text-destructive"}`}>
+              {s === "present" ? "✓" : s === "half-day" ? "½" : s === "leave" ? "L" : "A"}
+            </div>
+            {label}
           </div>
-
-          {/* Legend */}
-          <div className="flex items-center gap-4 mt-3 ml-8">
-            <span className="text-[10px] text-muted-foreground uppercase tracking-widest">Less</span>
-            {(["absent", "leave", "half-day", "present"] as AttendanceStatus[]).map((s) => (
-              <div key={s} className="flex items-center gap-1.5">
-                <div className={`w-[10px] h-[10px] rounded-[2px] ${STATUS_CLASS[s]}`} />
-                <span className="text-[10px] text-muted-foreground">{STATUS_LABEL[s]}</span>
-              </div>
-            ))}
-            <span className="text-[10px] text-muted-foreground uppercase tracking-widest">More</span>
-          </div>
+        ))}
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <div className="w-4 h-4 rounded border border-border bg-muted/60" />
+          No record
         </div>
       </div>
     </div>

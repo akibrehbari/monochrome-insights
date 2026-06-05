@@ -116,12 +116,7 @@ function MyPortalContent() {
                   {workingDaysThisMonth > 0 && <span> / {workingDaysThisMonth} days</span>}
                 </div>
               </div>
-              {/* Scale up the heatmap */}
-              <div className="overflow-x-auto">
-                <div style={{ transform: "scale(1.35)", transformOrigin: "top left", marginBottom: "2rem" }}>
-                  <AttendanceChart records={myAttendance} />
-                </div>
-              </div>
+              <AttendanceChart records={myAttendance} />
             </div>
 
             {/* 6-month salary graph — takes 2/5 */}
