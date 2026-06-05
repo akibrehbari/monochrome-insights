@@ -59,12 +59,14 @@ export type SystemRole = "admin" | "hr" | "employee" | "";
 export type Employee = {
   id: string;
   name: string;
-  role: string;        // job title e.g. "Reddit Lead"
+  role: string;           // job title e.g. "Reddit Lead"
   systemRole: SystemRole; // platform role
   team: Team;
   monthlySalary: number;
   monthlyBonus: number;
   notes: string;
+  username?: string;      // login email/username
+  password?: string;      // login password (shown only to admin/HR)
 };
 
 // ---------- Ops ----------
