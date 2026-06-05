@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { RoleGuard } from "@/components/RoleGuard";
 import { useMemo, useState } from "react";
 import { Plus, Trash2, Search } from "lucide-react";
 import { useStore, type Influencer } from "@/lib/store";
 import { PageHeader, fmt } from "@/components/PageHeader";
 import { EditableCell } from "@/components/EditableCell";
 
-export const Route = createFileRoute("/influencers")({ component: Page });
+export const Route = createFileRoute("/influencers")({ component: () => <RoleGuard allowed={["admin"]}><Page /></RoleGuard> });
 
 const uid = () => Math.random().toString(36).slice(2, 9);
 

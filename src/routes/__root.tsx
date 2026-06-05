@@ -4,10 +4,13 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
+  Navigate,
 } from "@tanstack/react-router";
 
 import { AppSidebar } from "@/components/AppSidebar";
 import { StoreProvider } from "@/lib/store";
+import { AuthProvider, useAuth, ROLE_HOME } from "@/lib/auth";
 
 function NotFoundComponent() {
   return (
@@ -34,7 +37,6 @@ function NotFoundComponent() {
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
-
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
@@ -46,10 +48,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
-            onClick={() => {
-              router.invalidate();
-              reset();
-            }}
+            onClick={() => { router.invalidate(); reset(); }}
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
             Try again
@@ -74,17 +73,43 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-
   return (
     <QueryClientProvider client={queryClient}>
-      <StoreProvider>
-        <div className="flex min-h-screen w-full bg-background text-foreground">
-          <AppSidebar />
-          <main className="flex-1 min-w-0 overflow-x-auto">
-            <Outlet />
-          </main>
-        </div>
-      </StoreProvider>
+      <AuthProvider>
+        <StoreProvider>
+          <AppShell />
+        </StoreProvider>
+      </AuthProvider>
     </QueryClientProvider>
+  );
+}
+
+function AppShell() {
+  const { user } = useAuth();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isLoginPage = pathname === "/login";
+
+  // Not logged in and not on login page → redirect
+  if (!user && !isLoginPage) {
+    return <Navigate to="/login" />;
+  }
+
+  // On login page but already logged in → redirect to role home
+  if (user && isLoginPage) {
+    return <Navigate to={ROLE_HOME[user.role]} />;
+  }
+
+  // Login page: full screen, no sidebar
+  if (isLoginPage) {
+    return <Outlet />;
+  }
+
+  return (
+    <div className="flex min-h-screen w-full bg-background text-foreground">
+      <AppSidebar />
+      <main className="flex-1 min-w-0 overflow-x-auto">
+        <Outlet />
+      </main>
+    </div>
   );
 }

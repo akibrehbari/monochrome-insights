@@ -7,6 +7,24 @@ export type MonthlyNumbers = Record<Month, number>;
 export const emptyMonthly = (v = 0): MonthlyNumbers =>
   MONTHS.reduce((a, m) => ({ ...a, [m]: v }), {} as MonthlyNumbers);
 
+export type Role = "admin" | "hr" | "employee";
+
+// ---------- SOP ----------
+export type SOP = {
+  id: string;
+  title: string;
+  content: string;
+  category: string;
+  assignedRoles: Role[];
+  createdAt: string;
+};
+
+// ---------- Attendance ----------
+export type AttendanceStatus = "present" | "absent" | "half-day" | "leave";
+export type AttendanceRecord = Record<string, AttendanceStatus>; // ISO date -> status
+export type AttendanceMap = Record<string, AttendanceRecord>;   // employeeId -> records
+
+// ---------- Influencer ----------
 export type Influencer = {
   id: string;
   name: string;
@@ -21,6 +39,7 @@ export type Influencer = {
   notes: string;
 };
 
+// ---------- Proxy ----------
 export type Proxy = {
   id: string;
   provider: string;
@@ -33,6 +52,7 @@ export type Proxy = {
   notes: string;
 };
 
+// ---------- Employee ----------
 export type Team = "Reddit" | "X" | "Meta" | "Video Editing" | "Management";
 export type Employee = {
   id: string;
@@ -44,6 +64,7 @@ export type Employee = {
   notes: string;
 };
 
+// ---------- Ops ----------
 export type OpsChannel = "Reddit" | "X" | "Meta" | "Video Editing";
 export type OpsRow = {
   id: string;
@@ -59,6 +80,7 @@ export type ForecastExtras = {
 
 const uid = () => Math.random().toString(36).slice(2, 9);
 
+// ---------- Seeds ----------
 const seedInfluencers: Influencer[] = [
   { id: uid(), name: "Ava Reed", screenName: "@avareed", redditAccount: "u/avareed", email: "ava@agency.io", proxyId: "PRX-001", niche: "Fitness", driveLink: "https://drive.google.com/ava", monthlyRevenue: 8200, monthlyCost: 1200, notes: "Top performer" },
   { id: uid(), name: "Liam Cole", screenName: "@liamcole", redditAccount: "u/liamc", email: "liam@agency.io", proxyId: "PRX-002", niche: "Finance", driveLink: "https://drive.google.com/liam", monthlyRevenue: 6400, monthlyCost: 900, notes: "" },
@@ -73,12 +95,13 @@ const seedProxies: Proxy[] = [
   { id: "PRX-004", provider: "ProxyEmpire", currentIp: "192.168.10.9", changeUrl: "https://proxyempire.io/change/004", monthlyCost: 25, renewalDate: "2026-06-02", status: "Expired", assignedInfluencer: "Noah Kim", notes: "Renew" },
 ];
 
-const seedEmployees: Employee[] = [
-  { id: uid(), name: "Sara Lin", role: "Reddit Lead", team: "Reddit", monthlySalary: 5200, monthlyBonus: 400, notes: "" },
-  { id: uid(), name: "Tom Hayes", role: "X Strategist", team: "X", monthlySalary: 4800, monthlyBonus: 300, notes: "" },
-  { id: uid(), name: "Ivy Park", role: "Meta Manager", team: "Meta", monthlySalary: 5400, monthlyBonus: 350, notes: "" },
-  { id: uid(), name: "Owen Diaz", role: "Senior Editor", team: "Video Editing", monthlySalary: 5000, monthlyBonus: 250, notes: "" },
-  { id: uid(), name: "Rae Okafor", role: "COO", team: "Management", monthlySalary: 7800, monthlyBonus: 600, notes: "" },
+// Fixed IDs so auth system can reference them
+export const seedEmployees: Employee[] = [
+  { id: "emp_sara",  name: "Sara Lin",   role: "Reddit Lead",    team: "Reddit",         monthlySalary: 5200, monthlyBonus: 400, notes: "" },
+  { id: "emp_tom",   name: "Tom Hayes",  role: "X Strategist",   team: "X",              monthlySalary: 4800, monthlyBonus: 300, notes: "" },
+  { id: "emp_ivy",   name: "Ivy Park",   role: "Meta Manager",   team: "Meta",           monthlySalary: 5400, monthlyBonus: 350, notes: "" },
+  { id: "emp_owen",  name: "Owen Diaz",  role: "Senior Editor",  team: "Video Editing",  monthlySalary: 5000, monthlyBonus: 250, notes: "" },
+  { id: "emp_rae",   name: "Rae Okafor", role: "COO",            team: "Management",     monthlySalary: 7800, monthlyBonus: 600, notes: "" },
 ];
 
 const defaultOpsItems = ["Software/Tools", "Ads/Promoted Posts", "Content Creation", "Misc"];
@@ -96,6 +119,165 @@ const seedOpsData: OpsData = {
   "Video Editing": seedOps(300),
 };
 
+// ---------- SOP seeds ----------
+const seedSOPs: SOP[] = [
+  {
+    id: "sop_001",
+    title: "Content Creation Guidelines",
+    category: "Content",
+    assignedRoles: ["admin", "hr", "employee"],
+    createdAt: "2026-01-10",
+    content: `## Content Creation Guidelines
+
+### Purpose
+Ensure all content produced meets eLeopards quality standards.
+
+### Guidelines
+1. All posts must be original and not copied from other sources.
+2. Use approved brand voice: professional, engaging, and authentic.
+3. Proofread all content before publishing — zero typos tolerated.
+4. Schedule posts during peak engagement windows (8–10am, 12–1pm, 7–9pm).
+5. Tag relevant accounts and use approved hashtag sets only.
+
+### Approval Process
+- Draft → Peer review → Manager sign-off → Publish.
+- Urgent posts can bypass peer review with manager approval.
+
+### Compliance
+Never make claims that cannot be substantiated. When in doubt, escalate to management.`,
+  },
+  {
+    id: "sop_002",
+    title: "Employee Onboarding Checklist",
+    category: "HR",
+    assignedRoles: ["admin", "hr"],
+    createdAt: "2026-01-15",
+    content: `## Employee Onboarding Checklist
+
+### Pre-Start
+- [ ] Send offer letter and obtain signed copy
+- [ ] Set up company email account
+- [ ] Add to Slack and relevant channels
+- [ ] Assign proxy and accounts
+
+### Day 1
+- [ ] Office/remote setup walkthrough
+- [ ] Introduce to team and manager
+- [ ] Review company policies and this SOP library
+- [ ] Set up 2FA on all company accounts
+
+### Week 1
+- [ ] Complete role-specific training
+- [ ] Shadow senior team member for 3 days
+- [ ] Set 30/60/90-day goals with manager
+
+### Payroll
+- [ ] Confirm bank details and salary agreement
+- [ ] Add to payroll system by end of Day 2`,
+  },
+  {
+    id: "sop_003",
+    title: "Proxy & Account Security Protocol",
+    category: "Operations",
+    assignedRoles: ["admin", "employee"],
+    createdAt: "2026-02-01",
+    content: `## Proxy & Account Security Protocol
+
+### Proxy Usage
+- Always connect to your assigned proxy before accessing any agency account.
+- Never share proxy credentials with anyone outside the team.
+- Report IP changes or bans to operations immediately.
+
+### Account Security
+- Use unique, strong passwords for every platform (min. 16 chars).
+- Enable 2FA on all accounts — no exceptions.
+- Never log into accounts from personal devices.
+- Log out of all accounts before disconnecting proxy.
+
+### Incident Response
+If an account is flagged or banned:
+1. Stop all activity immediately.
+2. Notify your manager within 30 minutes.
+3. Document the incident in the ops channel.
+4. Do not attempt to recover the account without guidance.`,
+  },
+  {
+    id: "sop_004",
+    title: "Payroll & Bonus Policy",
+    category: "HR",
+    assignedRoles: ["admin", "hr", "employee"],
+    createdAt: "2026-02-10",
+    content: `## Payroll & Bonus Policy
+
+### Salary Payment
+- Salaries are paid on the 1st of each month via bank transfer.
+- Payslips are sent to your registered email on the 28th of the prior month.
+
+### Bonuses
+- Monthly performance bonuses are assessed by your team lead.
+- Bonus criteria: KPI achievement, attendance, and peer feedback.
+- Bonuses are paid alongside the monthly salary.
+
+### Deductions
+- Unapproved absences: 1 day deducted per occurrence after 2 warnings.
+- Late arrivals (>15 min, 3+ in a month): 0.5-day deduction.
+
+### Queries
+Direct all payroll queries to hr@eleopards.com within 5 days of receiving your payslip.`,
+  },
+  {
+    id: "sop_005",
+    title: "Leave & Attendance Policy",
+    category: "HR",
+    assignedRoles: ["admin", "hr", "employee"],
+    createdAt: "2026-02-15",
+    content: `## Leave & Attendance Policy
+
+### Working Hours
+Standard hours: 9:00 AM – 6:00 PM (PKT), Monday to Friday.
+Remote workers must be online and responsive during core hours.
+
+### Leave Entitlement
+- Annual leave: 18 days per year
+- Sick leave: 10 days per year (medical certificate required for 3+ consecutive days)
+- Casual leave: 6 days per year
+
+### Leave Application
+Submit leave requests at least 48 hours in advance via your manager.
+Emergency leave must be communicated before shift start.
+
+### Attendance Tracking
+Attendance is recorded daily. Three unexcused absences in a month will trigger a formal review.`,
+  },
+];
+
+// ---------- Attendance seed ----------
+function generateAttendance(employeeId: string): AttendanceRecord {
+  const records: AttendanceRecord = {};
+  const today = new Date();
+  // Generate last 365 days
+  for (let i = 364; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const dow = d.getDay(); // 0=Sun, 6=Sat
+    if (dow === 0 || dow === 6) continue; // skip weekends
+    const key = d.toISOString().slice(0, 10);
+    // Deterministic pseudo-random based on employeeId + date
+    const seed = (employeeId.charCodeAt(4) || 1) * 7 + i;
+    const r = seed % 20;
+    if (r < 14)       records[key] = "present";
+    else if (r < 16)  records[key] = "half-day";
+    else if (r < 18)  records[key] = "leave";
+    else              records[key] = "absent";
+  }
+  return records;
+}
+
+const seedAttendance: AttendanceMap = Object.fromEntries(
+  seedEmployees.map((e) => [e.id, generateAttendance(e.id)])
+);
+
+// ---------- Store ----------
 type Store = {
   influencers: Influencer[];
   setInfluencers: React.Dispatch<React.SetStateAction<Influencer[]>>;
@@ -107,6 +289,10 @@ type Store = {
   setOps: React.Dispatch<React.SetStateAction<OpsData>>;
   extras: ForecastExtras;
   setExtras: React.Dispatch<React.SetStateAction<ForecastExtras>>;
+  sops: SOP[];
+  setSOPs: React.Dispatch<React.SetStateAction<SOP[]>>;
+  attendance: AttendanceMap;
+  setAttendance: React.Dispatch<React.SetStateAction<AttendanceMap>>;
 };
 
 const Ctx = createContext<Store | null>(null);
@@ -120,8 +306,19 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     otherRevenue: MONTHS.reduce((a, m) => ({ ...a, [m]: 1500 }), {} as MonthlyNumbers),
     miscellaneous: MONTHS.reduce((a, m) => ({ ...a, [m]: 400 }), {} as MonthlyNumbers),
   });
+  const [sops, setSOPs] = useState<SOP[]>(seedSOPs);
+  const [attendance, setAttendance] = useState<AttendanceMap>(seedAttendance);
+
   return (
-    <Ctx.Provider value={{ influencers, setInfluencers, proxies, setProxies, employees, setEmployees, ops, setOps, extras, setExtras }}>
+    <Ctx.Provider value={{
+      influencers, setInfluencers,
+      proxies, setProxies,
+      employees, setEmployees,
+      ops, setOps,
+      extras, setExtras,
+      sops, setSOPs,
+      attendance, setAttendance,
+    }}>
       {children}
     </Ctx.Provider>
   );

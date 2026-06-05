@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { RoleGuard } from "@/components/RoleGuard";
 import { Plus, Trash2 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useStore, type Employee, type Team } from "@/lib/store";
 import { PageHeader, fmt } from "@/components/PageHeader";
 import { EditableCell } from "@/components/EditableCell";
 
-export const Route = createFileRoute("/employees")({ component: Page });
+export const Route = createFileRoute("/employees")({ component: () => <RoleGuard allowed={["admin","hr"]}><Page /></RoleGuard> });
 
 const TEAMS: Team[] = ["Reddit", "X", "Meta", "Video Editing", "Management"];
 const uid = () => Math.random().toString(36).slice(2, 9);

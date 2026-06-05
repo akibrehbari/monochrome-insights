@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { RoleGuard } from "@/components/RoleGuard";
 import { MONTHS, useStore, buildMonthly, sumMonthly, type Month } from "@/lib/store";
 import { KpiCard, PageHeader, fmt, pct } from "@/components/PageHeader";
 import { EditableCell } from "@/components/EditableCell";
 
-export const Route = createFileRoute("/forecast")({ component: Page });
+export const Route = createFileRoute("/forecast")({ component: () => <RoleGuard allowed={["admin"]}><Page /></RoleGuard> });
 
 function Page() {
   const store = useStore();

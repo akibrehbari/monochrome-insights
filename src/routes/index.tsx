@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { RoleGuard } from "@/components/RoleGuard";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { MONTHS, useStore, buildMonthly, sumMonthly } from "@/lib/store";
 import { KpiCard, PageHeader, fmt, pct } from "@/components/PageHeader";
 
-export const Route = createFileRoute("/")({ component: Dashboard });
+export const Route = createFileRoute("/")({ component: () => <RoleGuard allowed={["admin"]}><Dashboard /></RoleGuard> });
 
 function Dashboard() {
   const store = useStore();

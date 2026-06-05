@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { RoleGuard } from "@/components/RoleGuard";
 import { useState } from "react";
 import { Plus, Trash2, ExternalLink } from "lucide-react";
 import { useStore, type Proxy } from "@/lib/store";
 import { KpiCard, PageHeader, fmt } from "@/components/PageHeader";
 import { EditableCell } from "@/components/EditableCell";
 
-export const Route = createFileRoute("/proxies")({ component: Page });
+export const Route = createFileRoute("/proxies")({ component: () => <RoleGuard allowed={["admin"]}><Page /></RoleGuard> });
 
 const newId = () => `PRX-${Math.floor(Math.random() * 900 + 100)}`;
 
