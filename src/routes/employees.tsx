@@ -44,6 +44,20 @@ const emptyForm = (): NewEmployeeForm => ({
   password: "",
 });
 
+// Defined OUTSIDE the modal so React never recreates it on re-render
+function Field({ label, children, error }: { label: string; children: React.ReactNode; error?: string }) {
+  return (
+    <div>
+      <label className="text-xs uppercase tracking-widest text-muted-foreground block mb-1.5">{label}</label>
+      {children}
+      {error && <p className="text-xs text-destructive mt-1">{error}</p>}
+    </div>
+  );
+}
+
+const inputCls = "w-full bg-background border border-border rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-foreground";
+const errCls = "border-destructive";
+
 function AddEmployeeModal({ onAdd, onClose }: { onAdd: (e: Employee) => void; onClose: () => void }) {
   const [form, setForm] = useState<NewEmployeeForm>(emptyForm());
   const [showPw, setShowPw] = useState(false);
@@ -81,17 +95,6 @@ function AddEmployeeModal({ onAdd, onClose }: { onAdd: (e: Employee) => void; on
       password: form.password,
     });
   }
-
-  const Field = ({ label, children, error }: { label: string; children: React.ReactNode; error?: string }) => (
-    <div>
-      <label className="text-xs uppercase tracking-widest text-muted-foreground block mb-1.5">{label}</label>
-      {children}
-      {error && <p className="text-xs text-destructive mt-1">{error}</p>}
-    </div>
-  );
-
-  const inputCls = "w-full bg-background border border-border rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-foreground";
-  const errCls = "border-destructive";
 
   return (
     <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
