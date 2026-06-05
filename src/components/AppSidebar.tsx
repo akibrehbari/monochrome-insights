@@ -1,7 +1,7 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
   LayoutDashboard, Users, Globe, Briefcase, Settings2,
-  TrendingUp, FileText, UserCircle, LogOut,
+  TrendingUp, FileText, UserCircle, LogOut, CalendarDays,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth, type Role } from "@/lib/auth";
@@ -20,6 +20,7 @@ const items: NavItem[] = [
   { title: "Employees",   url: "/employees",    icon: Briefcase,       roles: ["admin", "hr"] },
   { title: "Operations",  url: "/operations",   icon: Settings2,       roles: ["admin"] },
   { title: "Forecast",    url: "/forecast",     icon: TrendingUp,      roles: ["admin"] },
+  { title: "Attendance",  url: "/attendance",   icon: CalendarDays,    roles: ["admin", "hr"] },
   { title: "SOPs",        url: "/sops",         icon: FileText,        roles: ["admin", "hr", "employee"] },
   { title: "My Portal",   url: "/my-portal",    icon: UserCircle,      roles: ["employee"] },
 ];
