@@ -1,4 +1,23 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, type ReactNode, type Dispatch, type SetStateAction } from "react";
+
+// Persists state to localStorage — reads seed only on first ever load
+function useLocalState<T>(key: string, seed: T): [T, Dispatch<SetStateAction<T>>] {
+  const [state, setState] = useState<T>(() => {
+    try {
+      const stored = localStorage.getItem(key);
+      if (stored) return JSON.parse(stored) as T;
+    } catch { /* ignore */ }
+    return seed;
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(key, JSON.stringify(state));
+    } catch { /* ignore */ }
+  }, [key, state]);
+
+  return [state, setState];
+}
 
 export const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"] as const;
 export type Month = typeof MONTHS[number];
@@ -303,16 +322,16 @@ type Store = {
 const Ctx = createContext<Store | null>(null);
 
 export function StoreProvider({ children }: { children: ReactNode }) {
-  const [influencers, setInfluencers] = useState<Influencer[]>(seedInfluencers);
-  const [proxies, setProxies] = useState<Proxy[]>(seedProxies);
-  const [employees, setEmployees] = useState<Employee[]>(seedEmployees);
-  const [ops, setOps] = useState<OpsData>(seedOpsData);
-  const [extras, setExtras] = useState<ForecastExtras>({
+  const [influencers, setInfluencers] = useLocalState<Influencer[]>("el_influencers", seedInfluencers);
+  const [proxies, setProxies] = useLocalState<Proxy[]>("el_proxies", seedProxies);
+  const [employees, setEmployees] = useLocalState<Employee[]>("el_employees", seedEmployees);
+  const [ops, setOps] = useLocalState<OpsData>("el_ops", seedOpsData);
+  const [extras, setExtras] = useLocalState<ForecastExtras>("el_extras", {
     otherRevenue: MONTHS.reduce((a, m) => ({ ...a, [m]: 1500 }), {} as MonthlyNumbers),
     miscellaneous: MONTHS.reduce((a, m) => ({ ...a, [m]: 400 }), {} as MonthlyNumbers),
   });
-  const [sops, setSOPs] = useState<SOP[]>(seedSOPs);
-  const [attendance, setAttendance] = useState<AttendanceMap>(seedAttendance);
+  const [sops, setSOPs] = useLocalState<SOP[]>("el_sops", seedSOPs);
+  const [attendance, setAttendance] = useLocalState<AttendanceMap>("el_attendance", seedAttendance);
 
   return (
     <Ctx.Provider value={{
