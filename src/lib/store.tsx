@@ -54,10 +54,13 @@ export type Proxy = {
 
 // ---------- Employee ----------
 export type Team = "Reddit" | "X" | "Meta" | "Video Editing" | "Management";
+export type SystemRole = "admin" | "hr" | "employee" | "";
+
 export type Employee = {
   id: string;
   name: string;
-  role: string;
+  role: string;        // job title e.g. "Reddit Lead"
+  systemRole: SystemRole; // platform role
   team: Team;
   monthlySalary: number;
   monthlyBonus: number;
@@ -97,11 +100,11 @@ const seedProxies: Proxy[] = [
 
 // Fixed IDs so auth system can reference them
 export const seedEmployees: Employee[] = [
-  { id: "emp_sara",  name: "Sara Lin",   role: "Reddit Lead",    team: "Reddit",         monthlySalary: 5200, monthlyBonus: 400, notes: "" },
-  { id: "emp_tom",   name: "Tom Hayes",  role: "X Strategist",   team: "X",              monthlySalary: 4800, monthlyBonus: 300, notes: "" },
-  { id: "emp_ivy",   name: "Ivy Park",   role: "Meta Manager",   team: "Meta",           monthlySalary: 5400, monthlyBonus: 350, notes: "" },
-  { id: "emp_owen",  name: "Owen Diaz",  role: "Senior Editor",  team: "Video Editing",  monthlySalary: 5000, monthlyBonus: 250, notes: "" },
-  { id: "emp_rae",   name: "Rae Okafor", role: "COO",            team: "Management",     monthlySalary: 7800, monthlyBonus: 600, notes: "" },
+  { id: "emp_sara",  name: "Sara Lin",   role: "Reddit Lead",    systemRole: "employee", team: "Reddit",         monthlySalary: 5200, monthlyBonus: 400, notes: "" },
+  { id: "emp_tom",   name: "Tom Hayes",  role: "X Strategist",   systemRole: "employee", team: "X",              monthlySalary: 4800, monthlyBonus: 300, notes: "" },
+  { id: "emp_ivy",   name: "Ivy Park",   role: "Meta Manager",   systemRole: "employee", team: "Meta",           monthlySalary: 5400, monthlyBonus: 350, notes: "" },
+  { id: "emp_owen",  name: "Owen Diaz",  role: "Senior Editor",  systemRole: "employee", team: "Video Editing",  monthlySalary: 5000, monthlyBonus: 250, notes: "" },
+  { id: "emp_rae",   name: "Rae Okafor", role: "COO",            systemRole: "hr",       team: "Management",     monthlySalary: 7800, monthlyBonus: 600, notes: "" },
 ];
 
 const defaultOpsItems = ["Software/Tools", "Ads/Promoted Posts", "Content Creation", "Misc"];

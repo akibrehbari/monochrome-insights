@@ -2,13 +2,19 @@ import { createFileRoute } from "@tanstack/react-router";
 import { RoleGuard } from "@/components/RoleGuard";
 import { Plus, Trash2 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { useStore, type Employee, type Team } from "@/lib/store";
+import { useStore, type Employee, type Team, type SystemRole } from "@/lib/store";
 import { PageHeader, fmt } from "@/components/PageHeader";
 import { EditableCell } from "@/components/EditableCell";
 
 export const Route = createFileRoute("/employees")({ component: () => <RoleGuard allowed={["admin","hr"]}><Page /></RoleGuard> });
 
 const TEAMS: Team[] = ["Reddit", "X", "Meta", "Video Editing", "Management"];
+const SYSTEM_ROLES: { value: SystemRole; label: string }[] = [
+  { value: "",         label: "— Unassigned" },
+  { value: "admin",    label: "Admin" },
+  { value: "hr",       label: "HR" },
+  { value: "employee", label: "Employee" },
+];
 const uid = () => Math.random().toString(36).slice(2, 9);
 
 function Page() {
@@ -16,7 +22,7 @@ function Page() {
   const update = (id: string, patch: Partial<Employee>) =>
     setEmployees(prev => prev.map(r => r.id === id ? { ...r, ...patch } : r));
   const remove = (id: string) => setEmployees(prev => prev.filter(r => r.id !== id));
-  const add = () => setEmployees(prev => [...prev, { id: uid(), name: "New Hire", role: "", team: "Reddit", monthlySalary: 0, monthlyBonus: 0, notes: "" }]);
+  const add = () => setEmployees(prev => [...prev, { id: uid(), name: "New Hire", role: "", systemRole: "employee", team: "Reddit", monthlySalary: 0, monthlyBonus: 0, notes: "" }]);
 
   const teamData = TEAMS.map(t => {
     const list = employees.filter(e => e.team === t);
@@ -33,10 +39,10 @@ function Page() {
       } />
       <div className="p-8 space-y-6">
         <div className="border border-border overflow-x-auto bg-card">
-          <table className="w-full text-sm min-w-[1200px]">
+          <table className="w-full text-sm min-w-[1400px]">
             <thead className="bg-muted border-b border-border">
               <tr className="text-left text-xs uppercase tracking-wider text-muted-foreground">
-                {["#","Name","Role","Team","M. Salary","A. Salary","M. Bonus","A. Bonus","Total M.","Total A.","Notes",""].map(h =>
+                {["#","Name","Job Title","System Role","Team","M. Salary","A. Salary","M. Bonus","A. Bonus","Total M.","Total A.","Notes",""].map(h =>
                   <th key={h} className="px-3 py-3 font-medium">{h}</th>)}
               </tr>
             </thead>
@@ -48,6 +54,17 @@ function Page() {
                     <td className="px-3 py-2 text-muted-foreground">{i + 1}</td>
                     <td className="px-3 py-2 font-medium"><EditableCell value={r.name} onChange={v => update(r.id, { name: v })} /></td>
                     <td className="px-3 py-2"><EditableCell value={r.role} onChange={v => update(r.id, { role: v })} /></td>
+                    <td className="px-3 py-2">
+                      <select
+                        value={r.systemRole ?? ""}
+                        onChange={e => update(r.id, { systemRole: e.target.value as SystemRole })}
+                        className="text-sm border border-border bg-background px-2 py-1 rounded"
+                      >
+                        {SYSTEM_ROLES.map(o => (
+                          <option key={o.value} value={o.value}>{o.label}</option>
+                        ))}
+                      </select>
+                    </td>
                     <td className="px-3 py-2">
                       <select value={r.team} onChange={e => update(r.id, { team: e.target.value as Team })}
                         className="text-sm border border-border bg-background px-2 py-1">
